@@ -1,0 +1,98 @@
+#!/usr/bin/env perl
+
+use Net::FTP;
+use File::Copy;
+use Mail::Sender;
+use Net::SMTP;
+use File::Basename;
+use Email::Send::SMTP::Gmail;
+use POSIX qw(strftime);
+chomp($myname = `id -un`);
+my $documents = "/Users/$myname/Documents/";
+my $logname = "/Users/$myname/Documents/RR_inbound_suman.txt";
+my $filetobecopied = "RR_inbound_suman.txt";
+my $log =">> $logname";
+
+
+my $date = strftime("%m-%d-%y",localtime);
+my $time = strftime("%I:%M:%S",localtime);
+my $ftpdate = strftime("%m%d%y",localtime);
+my $timefolder = strftime("%I%M",localtime);
+my $current = `date +%m/%d/%Y`;
+chomp $current;
+my $ftpPSDfolder ="/suman/Maurices/PSD/";
+my $downloadPSDfolder = "/Volumes/photorepos/Partners/OutSource/inbound";
+my $psdsubject ="downloading $ftpPSDfolder to $downloadPSDfolder";
+my $me ='bflieck@industrialcolor.com';
+my $from= 'bflieck@industrialcolor.com';
+
+
+my ($mail,$error)=Email::Send::SMTP::Gmail->new( -smtp=>'smtp-relay.gmail.com',
+                                                 -login=>'bflieck@industrialcolor.com',
+                                                 -pass=>'Cheeri@1',
+#                                                  -layer=> 'ssl',
+                                                 -port=> '25',
+                                                 -debug=> 1,
+                                                 -timeout=> 1000);
+
+
+######################################################
+chdir( $downloadPSDfolder) or warn "Cant change to $downloadedfolder $!";
+
+print "######################################################\n";
+print "$date download the TIFF and delete them from the FTP\n";
+print "######################################################\n";
+$ftp = Net::FTP->new('YOURFTP, Debug => 1, -Timeout => 1000);
+$ftp->login('USERNAME','PASS');
+$ftp-> binary();
+$ftp->cwd("$ftpPSDfolder");
+@PSDremote_files = $ftp->ls;
+if (@PSDremote_files > 0) {
+my $incomingJPG = @PSDremote_files;
+foreach my $file (@PSDremote_files) {
+$ftp->get("$file") or warn $ftp->message;
+}
+print "######################################################\n";
+print "downloding @PSDremote_files\n";
+print "######################################################\n";
+foreach my $file (@PSDremote_files) {
+$ftp->delete("$file") or warn $ftp->message;
+} 
+$ftp->quit;
+my $body =join "<br>\n", @PSDremote_files;
+$mail->send(-to=>"$me", -from=>"$from", -subject=>"$psdsubject", -body=>"$body", -contenttype=>'text/html');
+$mail->bye;
+}
+else
+{
+print "$date $time no TIFFs to download now\n";
+}
+
+
+print "####################################################\n";
+print "download log updating\n";
+print "####################################################\n";
+open FILE, "$log" or warn $!;
+foreach my $file (@PSDremote_files){
+chomp $date; 
+chomp $time;
+
+print FILE"$date\t$time\t$file";
+print FILE "\n";
+}
+close FILE;
+
+# 
+# chdir ($documents);
+#  
+# 
+# my $newfile = "/Volumes/photorepos/Reports/Suman/RR_inbound_suman.txt";
+# if (copy($filetobecopied, $newfile) == 0){;
+# print" error";
+# }
+# else
+# {
+# print "##################################\n";
+# print "$filetobecopied worked\n";
+# print "##################################\n";
+# }
