@@ -28,8 +28,8 @@ my $from= 'bflieck@industrialcolor.com';
 
 
 my ($mail,$error)=Email::Send::SMTP::Gmail->new( -smtp=>'smtp-relay.gmail.com',
-                                                 -login=>'bflieck@industrialcolor.com',
-                                                 -pass=>'Cheeri@1',
+                                                 -login=>'EMAIL Address',
+                                                 -pass=>'PASS',
 #                                                  -layer=> 'ssl',
                                                  -port=> '25',
                                                  -debug=> 1,
@@ -82,17 +82,4 @@ print FILE "\n";
 }
 close FILE;
 
-# 
-# chdir ($documents);
-#  
-# 
-# my $newfile = "/Volumes/photorepos/Reports/Suman/RR_inbound_suman.txt";
-# if (copy($filetobecopied, $newfile) == 0){;
-# print" error";
-# }
-# else
-# {
-# print "##################################\n";
-# print "$filetobecopied worked\n";
-# print "##################################\n";
-# }
+
